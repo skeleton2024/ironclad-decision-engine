@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+node_modules/
+.next/
+dist/
+build/
+*.egg-info/
+.heartbeat.json
+heartbeat_state.json
