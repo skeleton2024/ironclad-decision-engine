@@ -1,45 +1,111 @@
-# Project Ironclad: Adversarial Rational Decision Engine
+# 🛡️ Ironclad Decision Engine
 
-> “如果不经受最严苛的审视，任何方案都只是脆弱的幻觉。”
+> 对抗式理性决策引擎：通过递归拆解、红队审计、蒙特卡洛仿真输出可验证的决策方案。
 
-Project Ironclad 是一个专为追求**绝对理性**和**量化确定性**的决策者设计的工具。它拒绝模糊的预估，通过“构建者-审判官”的双重对抗逻辑，将你的想法拆解为原子级的物理步骤，并利用实时数据进行极限压力测试。
+[![CI](https://github.com/skeleton2024/ironclad-decision-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/skeleton2024/ironclad-decision-engine/actions)
 
----
+## 架构
 
-## 核心架构逻辑
+```
+用户输入 Goal
+    ↓
+┌─────────────────────────────────────────────┐
+│  Architect（递归拆解 + PERT 估算 Te）        │
+│  te = (O + 4M + P) / 6                      │
+└─────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────┐
+│  Inquisitor（红队审计）                      │
+│  检测高耗时 / 依赖缺失 / 深层嵌套风险        │
+└─────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────┐
+│  Quant Engine（蒙特卡洛仿真）                │
+│  输出 mean / min / max / P10 / P50 / P90    │
+└─────────────────────────────────────────────┘
+    ↓
+  推荐决策 + 完整推理链
+```
 
-### I. 方案执行模块：递归拆解 (The Architect)
+## 核心模块
 
-该模块不只是记录任务，它通过**递归提问**强制用户进入“物理第一性原理”：
+| 模块 | 路径 | 说明 |
+|------|------|------|
+| **Architect** | `modules/architect/` | 递归任务拆解 + PERT 估算 |
+| **Inquisitor** | `modules/inquisitor/` | 红队审计，依赖与风险检测 |
+| **Quant Engine** | `shared/quant-engine/` | 蒙特卡洛仿真引擎 |
+| **API** | `api/` | FastAPI 端点 |
+| **Orchestration** | `orchestration/` | LangGraph 工作流编排 |
 
-* 多维探讨： 挖掘目标背后的隐藏变量（时间、技术复杂度、外部依赖）。
-* 原子化拆解： 任务必须拆解至其执行时间具备“统计学意义”的程度。
-* PERT 量化： 采用三点估算法计算期望时间，消除乐观偏差。
+## 快速启动
 
-### II. 检测功能模块：对抗式审计 (The Inquisitor)
+### Docker Compose（一键启动）
 
-这是系统的“红队”模块，其唯一目标是证明你的方案会**失败**：
+```bash
+cp .env.example .env
+# 编辑 .env，填入真实 API Key
+docker-compose up
+```
 
-* 理性攻击： 针对方案中的每一个环节，系统会调用搜索引擎获取真实世界的失败案例、行业均值和技术基准值。
-* 逻辑漏洞探测： 识别“单点故障 (SPOF)”和“资源冗余不足”。
-* 蒙特卡洛可行性评估： 通过数万次模拟运行，输出方案在极端情况下的生存概率曲线。
+- API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- 前端: http://localhost:3000
 
----
+### 本地开发
 
-## 技术实现逻辑
+```bash
+# 后端
+pip install -r requirements.txt
+PYTHONPATH=. uvicorn api.main:app --reload --port 8000
 
-| 模块 | 技术栈 | 核心功能 |
-| --- | --- | --- |
-| Frontend | Next.js 14 | 响应式仪表盘，可视化方案拓扑图 (DAG) |
-| Agent Logic | LangGraph | 管理“探讨 -> 修正 -> 攻击 -> 再修正”的状态循环 |
-| Search Engine | Tavily / Serper | 实时搜集真实数据（如 API 延迟、市场转化率、物料成本） |
-| Simulation | NumPy / SciPy | 执行高并发的风险概率模拟 |
+# 前端（新终端）
+cd frontend && npm install && npm run dev
+```
 
----
+## 项目里程碑
 
-## 开发路线图
+| 里程碑 | 状态 | 说明 |
+|--------|------|------|
+| M1: 仓库骨架 + 核心 Schema | ✅ | `core/schemas/atomic_task.py` |
+| M2: Architect 递归拆解 + PERT | ✅ | `modules/architect/decompose.py` |
+| M3: Inquisitor 红队审计 | ✅ | `modules/inquisitor/` |
+| M4: Monte Carlo 引擎 | ✅ | `shared/quant-engine/sim.py` |
+| M5: 端到端 Demo | ✅ | FastAPI + Next.js + LangGraph + Docker |
 
-* [ ] Phase 1: 建立标准 Schema 与 FastAPI 基础路由。
-* [ ] Phase 2: 开发“递归拆解”工作流。
-* [ ] Phase 3: 接入实时搜索与对抗性 Prompt 库。
-* [ ] Phase 4: 封装为 PWA，支持随时随地的决策自检。
+## 测试
+
+```bash
+PYTHONPATH=. python3 tests/test_progress.py
+```
+
+## API 使用示例
+
+```bash
+curl -X POST http://localhost:8000/api/decide \
+  -H "Content-Type: application/json" \
+  -d '{
+    "goal": "我应该在北京还是上海设立研发中心？",
+    "context": "我们是AI创业公司，核心团队在北京",
+    "max_depth": 3
+  }'
+```
+
+## 环境变量
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `OPENAI_API_KEY` | `<YOUR_OPENAI_API_KEY>` | OpenAI API 密钥 |
+| `ANTHROPIC_API_KEY` | `<YOUR_ANTHROPIC_API_KEY>` | Anthropic API 密钥 |
+| `LOG_LEVEL` | `INFO` | 日志级别 |
+
+> ⚠️ 部署时请将 `.env.example` 复制为 `.env` 并填入真实密钥
+
+## 技术栈
+
+- **后端**: FastAPI · LangGraph · Pydantic · NumPy
+- **前端**: Next.js 14 · Tailwind CSS · TypeScript
+- **容器化**: Docker · Docker Compose
+
+## License
+
+MIT

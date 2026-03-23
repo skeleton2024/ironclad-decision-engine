@@ -1,0 +1,16 @@
+[
+  {
+    "goal": "我应该在北京还是上海设立研发中心？",
+    "context": "我们是AI创业公司，核心团队在北京，已有10人",
+    "max_depth": 3,
+    "expected_tasks": 8,
+    "expected_risks": 2
+  },
+  {
+    "goal": "是否应该收购一家有20人团队的竞品公司？",
+    "context": "收购价格500万人民币，对方有核心技术专利",
+    "max_depth": 2,
+    "expected_tasks": 6,
+    "expected_risks": 3
+  }
+]
