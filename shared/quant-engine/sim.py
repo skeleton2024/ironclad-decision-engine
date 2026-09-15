@@ -27,8 +27,9 @@ def monte_carlo_simulate(
     Returns:
         dict with mean, p10, p50, p90, min, max durations, and optional success_probability
     """
-    if seed is not None:
-        random.seed(seed)
+    if iterations < 1:
+        raise ValueError("iterations must be positive")
+    rng = random.Random(seed)
 
     durations = []
 
@@ -39,7 +40,9 @@ def monte_carlo_simulate(
             m = task.get("most_likely", task.get("te", 1.0))
             p = task.get("pessimistic", task.get("te", 1.0))
             # Triangular distribution: good proxy for PERT
-            sampled = random.triangular(o, p, m)
+            if not (0 <= o <= m <= p):
+                raise ValueError("Durations require 0 <= optimistic <= most_likely <= pessimistic")
+            sampled = rng.triangular(o, p, m)
             total += sampled
         durations.append(total)
 

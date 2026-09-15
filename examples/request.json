@@ -1,0 +1,26 @@
+{
+  "goal": "准备项目演示",
+  "plan": {
+    "id": "demo",
+    "name": "准备项目演示",
+    "subtasks": [
+      {
+        "id": "a",
+        "name": "整理材料",
+        "optimistic": 2,
+        "most_likely": 4,
+        "pessimistic": 8
+      },
+      {
+        "id": "b",
+        "name": "验证入口",
+        "optimistic": 1,
+        "most_likely": 3,
+        "pessimistic": 6,
+        "dependencies": [
+          "a"
+        ]
+      }
+    ]
+  }
+}

@@ -14,6 +14,7 @@ class DecisionRequest(BaseModel):
     model_name: Optional[str] = Field("gpt-4o-mini", description="调用的LLM模型")
     api_key: Optional[str] = Field(None, description="LLM API Key（支持占位符）")
     max_depth: Optional[int] = Field(3, ge=1, le=10, description="最大递归深度")
+    plan: Optional[dict] = Field(None, description="Task tree with estimates in hours; omitted uses a labeled demo plan")
 
     class Config:
         json_schema_extra = {
@@ -44,7 +45,7 @@ class MonteCarloResult(BaseModel):
     p10_hours: float
     p50_hours: float
     p90_hours: float
-    confidence: float = Field(..., description="置信度 0~1")
+    confidence: Optional[float] = Field(None, description="Reserved for calibrated estimates")
     simulation_count: int
 
 

@@ -39,6 +39,9 @@ def decompose_task(task: Dict[str, Any], depth: int = 0, max_depth: int = 3) -> 
             "id": task["id"],
             "name": task["name"],
             "te": round(te, 4),
+            "optimistic": task.get("optimistic", task.get("duration_estimate", 1.0)),
+            "most_likely": task.get("most_likely", task.get("duration_estimate", 1.0)),
+            "pessimistic": task.get("pessimistic", task.get("duration_estimate", 1.0)),
             "depth": depth,
             "dependencies": task.get("dependencies", []),
         }]

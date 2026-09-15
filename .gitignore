@@ -12,3 +12,6 @@ build/
 heartbeat_state.json
 n'
 *.sh
+
+.pytest-tmp/
+.next/

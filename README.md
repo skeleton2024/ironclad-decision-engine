@@ -1,111 +1,50 @@
-# 🛡️ Ironclad Decision Engine
+# Ironclad Decision Engine
 
-> 对抗式理性决策引擎：通过递归拆解、红队审计、蒙特卡洛仿真输出可验证的决策方案。
+**计划拆解、风险规则与工时模拟原型**
 
-[![CI](https://github.com/skeleton2024/ironclad-decision-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/skeleton2024/ironclad-decision-engine/actions)
+我把任务树、依赖和三点估时组织成一条计算流程：递归拆解，检查高耗时与缺失依赖，再模拟总工时分布。FastAPI 返回结构化任务、风险和计算摘要，Next.js 提供交互入口。
 
-## 架构
+## 运行
 
-```
-用户输入 Goal
-    ↓
-┌─────────────────────────────────────────────┐
-│  Architect（递归拆解 + PERT 估算 Te）        │
-│  te = (O + 4M + P) / 6                      │
-└─────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────┐
-│  Inquisitor（红队审计）                      │
-│  检测高耗时 / 依赖缺失 / 深层嵌套风险        │
-└─────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────┐
-│  Quant Engine（蒙特卡洛仿真）                │
-│  输出 mean / min / max / P10 / P50 / P90    │
-└─────────────────────────────────────────────┘
-    ↓
-  推荐决策 + 完整推理链
-```
+Python 3.10–3.12，建议独立虚拟环境。
 
-## 核心模块
+~~~bash
+python -m pip install -r requirements.txt
+python tests/test_progress.py
+python -m pip install pytest
+python -m pytest tests/test_api_contract.py -q
+python -m uvicorn api.main:app --port 8000
+~~~
 
-| 模块 | 路径 | 说明 |
-|------|------|------|
-| **Architect** | `modules/architect/` | 递归任务拆解 + PERT 估算 |
-| **Inquisitor** | `modules/inquisitor/` | 红队审计，依赖与风险检测 |
-| **Quant Engine** | `shared/quant-engine/` | 蒙特卡洛仿真引擎 |
-| **API** | `api/` | FastAPI 端点 |
-| **Orchestration** | `orchestration/` | LangGraph 工作流编排 |
+打开 http://localhost:8000/docs ，向 POST /api/decide 输入目标。省略 plan 时使用明确标记的内置示例估时；提供 plan 可分析自己的任务树。接口示例见 [examples/request.json](examples/request.json)。
 
-## 快速启动
+前端在独立终端执行：
 
-### Docker Compose（一键启动）
+~~~bash
+cd frontend
+npm install
+npm run dev
+~~~
 
-```bash
-cp .env.example .env
-# 编辑 .env，填入真实 API Key
-docker-compose up
-```
+访问 http://localhost:3000 。本地计算流程无需 API Key。
 
-- API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-- 前端: http://localhost:3000
+## 计算约定
 
-### 本地开发
+- 所有估时统一为小时。
+- PERT 展示值为 (O + 4M + P) / 6。
+- 模拟独立采样三角分布 Triangular(O, P, M)，其均值为 (O + M + P) / 3，与 PERT 展示值分别计算。
+- 各任务工时相加得到串行总工时；依赖关系用于规则检查。
+- P10/P50/P90 是模拟分位数，需结合输入估时理解。
 
-```bash
-# 后端
-pip install -r requirements.txt
-PYTHONPATH=. uvicorn api.main:app --reload --port 8000
+## 结构与本次修复
 
-# 前端（新终端）
-cd frontend && npm install && npm run dev
-```
+- modules/architect/：递归拆解并保留 O/M/P，避免模拟退化为固定值。
+- modules/inquisitor/：高耗时、缺失依赖和深层嵌套检查。
+- shared/quant-engine/sim.py：独立随机数生成器、输入约束、工时分布。
+- orchestration/pipeline.py：API 共用的本地计算流程。
+- 修复了 API 导入、字段衔接和会话查询；示例估时单独标记。
+- orchestration/ironclad_graph.py 提供可选 LangGraph 包装。
 
-## 项目里程碑
+## 许可
 
-| 里程碑 | 状态 | 说明 |
-|--------|------|------|
-| M1: 仓库骨架 + 核心 Schema | ✅ | `core/schemas/atomic_task.py` |
-| M2: Architect 递归拆解 + PERT | ✅ | `modules/architect/decompose.py` |
-| M3: Inquisitor 红队审计 | ✅ | `modules/inquisitor/` |
-| M4: Monte Carlo 引擎 | ✅ | `shared/quant-engine/sim.py` |
-| M5: 端到端 Demo | ✅ | FastAPI + Next.js + LangGraph + Docker |
-
-## 测试
-
-```bash
-PYTHONPATH=. python3 tests/test_progress.py
-```
-
-## API 使用示例
-
-```bash
-curl -X POST http://localhost:8000/api/decide \
-  -H "Content-Type: application/json" \
-  -d '{
-    "goal": "我应该在北京还是上海设立研发中心？",
-    "context": "我们是AI创业公司，核心团队在北京",
-    "max_depth": 3
-  }'
-```
-
-## 环境变量
-
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `OPENAI_API_KEY` | `<YOUR_OPENAI_API_KEY>` | OpenAI API 密钥 |
-| `ANTHROPIC_API_KEY` | `<YOUR_ANTHROPIC_API_KEY>` | Anthropic API 密钥 |
-| `LOG_LEVEL` | `INFO` | 日志级别 |
-
-> ⚠️ 部署时请将 `.env.example` 复制为 `.env` 并填入真实密钥
-
-## 技术栈
-
-- **后端**: FastAPI · LangGraph · Pydantic · NumPy
-- **前端**: Next.js 14 · Tailwind CSS · TypeScript
-- **容器化**: Docker · Docker Compose
-
-## License
-
-MIT
+沿用项目原有 MIT 声明，见 [LICENSE](LICENSE)。

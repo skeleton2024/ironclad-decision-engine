@@ -59,7 +59,6 @@ export default function Home() {
           goal,
           context: context || null,
           max_depth: maxDepth,
-          api_key: apiKey || null,
         }),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -119,16 +118,7 @@ export default function Home() {
                 onChange={e => setMaxDepth(Number(e.target.value))}
               />
             </div>
-            <div className="flex-1">
-              <label className="block text-sm text-slate-300 mb-1">API Key（可选，占位符也行）</label>
-              <input
-                type="password"
-                className="w-full bg-slate-800 border border-slate-600 rounded p-3 text-white"
-                placeholder="sk-... 或 <YOUR_KEY>"
-                value={apiKey}
-                onChange={e => setApiKey(e.target.value)}
-              />
-            </div>
+
           </div>
           <button
             type="submit"
@@ -169,7 +159,7 @@ export default function Home() {
                 ].map(([label, val, unit]) => (
                   <div key={label as string} className="bg-slate-700 rounded p-3 text-center">
                     <div className="text-slate-400 text-xs">{label}</div>
-                    <div className="text-xl font-mono text-blue-300">{val.toFixed(1)}{unit}</div>
+                    <div className="text-xl font-mono text-blue-300">{Number(val).toFixed(1)}{unit}</div>
                   </div>
                 ))}
               </div>

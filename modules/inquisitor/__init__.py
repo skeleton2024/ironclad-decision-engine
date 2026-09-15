@@ -10,7 +10,7 @@ class Inquisitor:
     """
 
     # Default risk thresholds
-    HIGH_TE_THRESHOLD = 20.0  # days — flag tasks with Te above this
+    HIGH_TE_THRESHOLD = 20.0  # hours — same unit as the API and task estimates
     MAX_DEPENDENCY_DEPTH = 5
 
     def audit(self, atomic_tasks: List[Dict[str, Any]]) -> Dict[str, Any]:
